@@ -7,5 +7,15 @@ html, body, #__next {
 }
 
 body {
-  @apply bg-white text-gray-900 antialiased;
+  @apply bg-neutral-50 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 antialiased;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+/* Improve default focus styles */
+*:focus {
+  @apply outline-none ring-2 ring-primary-500/50;
+}
+
+.container {
+  max-width: 1100px;
 }
