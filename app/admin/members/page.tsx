@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import Link from "next/link";
 
 export default async function AdminMembersPage() {
     // @ts-ignore - 'role' is not in client types yet
@@ -24,6 +25,9 @@ export default async function AdminMembersPage() {
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                                 Joined
+                            </th>
+                            <th className="relative px-6 py-3">
+                                <span className="sr-only">Edit</span>
                             </th>
                         </tr>
                     </thead>
@@ -56,6 +60,11 @@ export default async function AdminMembersPage() {
                                 </td>
                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                     {new Date(member.createdAt).toLocaleDateString()}
+                                </td>
+                                <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                                    <Link href={`/admin/members/${member.id}/edit`} className="text-[#1a472a] hover:text-[#2d5a3d]">
+                                        Edit
+                                    </Link>
                                 </td>
                             </tr>
                         ))}

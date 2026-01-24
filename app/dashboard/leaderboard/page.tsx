@@ -12,6 +12,11 @@ export default async function LeaderboardPage() {
       name: true,
       handicap: true,
       membershipYear: true,
+      handicapHistory: {
+        take: 1,
+        orderBy: { recordedAt: "desc" },
+        select: { handicap: true },
+      },
     },
   });
 
@@ -19,7 +24,7 @@ export default async function LeaderboardPage() {
     <div>
       <h1 className="mb-2 text-2xl font-semibold text-fairway">Leaderboard</h1>
       <p className="mb-8 text-gray-600">
-        Members by handicap (lowest first). Only members with a handicap on file are shown.
+        Members by handicap. Arrows indicate change from last update.
       </p>
 
       <div className="card overflow-hidden p-0">
@@ -30,18 +35,42 @@ export default async function LeaderboardPage() {
                 <th className="px-4 py-3 font-medium text-gray-700">#</th>
                 <th className="px-4 py-3 font-medium text-gray-700">Name</th>
                 <th className="px-4 py-3 font-medium text-gray-700">Handicap</th>
+                <th className="px-4 py-3 font-medium text-gray-700">Trend</th>
                 <th className="px-4 py-3 font-medium text-gray-700">Year</th>
               </tr>
             </thead>
             <tbody>
-              {members.map((m, i) => (
-                <tr key={m.id} className="border-b border-gray-100">
-                  <td className="px-4 py-3 text-gray-500">{i + 1}</td>
-                  <td className="px-4 py-3 font-medium">{m.name || "Member"}</td>
-                  <td className="px-4 py-3">{m.handicap}</td>
-                  <td className="px-4 py-3 text-gray-600">{m.membershipYear}</td>
-                </tr>
-              ))}
+              {members.map((m, i) => {
+                const prevHandicap = m.handicapHistory[0]?.handicap;
+                const trend =
+                  prevHandicap != null && m.handicap != null
+                    ? m.handicap - prevHandicap
+                    : 0;
+
+                return (
+                  <tr key={m.id} className="border-b border-gray-100">
+                    <td className="px-4 py-3 text-gray-500">{i + 1}</td>
+                    <td className="px-4 py-3 font-medium">{m.name || "Member"}</td>
+                    <td className="px-4 py-3">{m.handicap}</td>
+                    <td className="px-4 py-3">
+                      {trend > 0 && (
+                        <span className="flex items-center text-red-600">
+                          ↑ <span className="ml-1 text-xs">+{trend.toFixed(1)}</span>
+                        </span>
+                      )}
+                      {trend < 0 && (
+                        <span className="flex items-center text-green-600">
+                          ↓ <span className="ml-1 text-xs">{trend.toFixed(1)}</span>
+                        </span>
+                      )}
+                      {trend === 0 && (
+                        <span className="text-gray-400 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{m.membershipYear}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
