@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 type Props = {
   eventId: string;
   isRegistered: boolean;
+  isWaitlisted: boolean;
   isFull: boolean;
 };
 
-export function EventActions({ eventId, isRegistered, isFull }: Props) {
+export function EventActions({ eventId, isRegistered, isWaitlisted, isFull }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -57,6 +58,24 @@ export function EventActions({ eventId, isRegistered, isFull }: Props) {
     return <p className="text-sm text-red-600">{error}</p>;
   }
 
+  if (isWaitlisted) {
+    return (
+      <div className="space-y-3">
+        <p className="rounded-md bg-yellow-50 px-3 py-2 text-sm font-medium text-yellow-800">
+          You are on the waitlist.
+        </p>
+        <button
+          type="button"
+          onClick={unregister}
+          disabled={loading}
+          className="text-sm text-gray-500 hover:text-red-600 underline"
+        >
+          {loading ? "Updating…" : "Leave waitlist"}
+        </button>
+      </div>
+    );
+  }
+
   if (isRegistered) {
     return (
       <button
@@ -72,7 +91,17 @@ export function EventActions({ eventId, isRegistered, isFull }: Props) {
 
   if (isFull) {
     return (
-      <p className="text-amber-700">This event is full. You can no longer register.</p>
+      <div className="space-y-3">
+        <p className="text-amber-700">This event is full.</p>
+        <button
+          type="button"
+          onClick={register}
+          disabled={loading}
+          className="btn-primary bg-amber-600 hover:bg-amber-700 focus:ring-amber-600"
+        >
+          {loading ? "Joining..." : "Join Waitlist"}
+        </button>
+      </div>
     );
   }
 

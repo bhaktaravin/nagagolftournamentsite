@@ -13,20 +13,28 @@ export async function POST(
 
   const { id: eventId } = await params;
 
+  // 1. Get event and count only REGISTERED participants
   const event = await prisma.event.findUnique({
     where: { id: eventId, isPublished: true },
-    include: { _count: { select: { registrations: true } } },
+    include: {
+      _count: {
+        select: {
+          registrations: {
+            where: { status: "REGISTERED" },
+          },
+        },
+      },
+    },
   });
 
   if (!event) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
+  // 2. Determine status based on capacity
+  let status = "REGISTERED";
   if (event.maxParticipants != null && event._count.registrations >= event.maxParticipants) {
-    return NextResponse.json(
-      { error: "This event is full." },
-      { status: 400 }
-    );
+    status = "WAITLISTED";
   }
 
   const existing = await prisma.eventRegistration.findUnique({
@@ -37,13 +45,18 @@ export async function POST(
 
   if (existing) {
     return NextResponse.json(
-      { error: "You are already registered for this event." },
+      { error: "You are already registered/waitlisted for this event." },
       { status: 400 }
     );
   }
 
+  // @ts-ignore - Enum in prisma client needs update
   await prisma.eventRegistration.create({
-    data: { eventId, memberId: session.memberId },
+    data: {
+      eventId,
+      memberId: session.memberId,
+      status: status as any
+    },
   });
 
   return NextResponse.json({ ok: true });

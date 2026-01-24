@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getMember } from "@/lib/auth";
 import { LoginForm } from "@/components/LoginForm";
+import { SiteHeader } from "@/components/SiteHeader";
 
 export default async function HomePage({
   searchParams,
@@ -13,33 +14,7 @@ export default async function HomePage({
   if (member) {
     return (
       <main className="min-h-screen">
-        <header className="border-b border-gray-200 bg-white">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <Link href="/" className="text-xl font-semibold text-fairway">
-              NAGGA
-            </Link>
-            <nav className="flex items-center gap-4">
-              <Link href="/dashboard" className="text-gray-600 hover:text-fairway">
-                Dashboard
-              </Link>
-              <Link href="/dashboard/events" className="text-gray-600 hover:text-fairway">
-                Events
-              </Link>
-              <Link href="/dashboard/members" className="text-gray-600 hover:text-fairway">
-                Members
-              </Link>
-              <Link href="/about" className="text-gray-600 hover:text-fairway">
-                About
-              </Link>
-              <span className="text-gray-500">{member.name || member.phone}</span>
-              <form action="/api/auth/logout" method="POST">
-                <button type="submit" className="btn-secondary text-sm">
-                  Logout
-                </button>
-              </form>
-            </nav>
-          </div>
-        </header>
+        <SiteHeader />
         <section className="mx-auto max-w-6xl px-4 py-12">
           <h1 className="mb-2 text-2xl font-semibold text-fairway">
             Welcome back, {member.name || "Member"}!
@@ -83,7 +58,11 @@ export default async function HomePage({
             </Link>
           </p>
         </div>
-        <p className="mt-6 text-center text-xs text-gray-500">
+        <div className="mt-6 flex justify-center gap-4 text-sm text-gray-500">
+          <Link href="/about" className="hover:text-fairway">About</Link>
+          <Link href="/contact" className="hover:text-fairway">Contact</Link>
+        </div>
+        <p className="mt-4 text-center text-xs text-gray-500">
           © NAGGA · An offering by Anand Systems Inc
         </p>
       </div>

@@ -17,6 +17,19 @@ async function main() {
     },
   });
 
+  // Admin member: phone 9998887777, zip 00000
+  const admin = await prisma.member.upsert({
+    where: { phone: "9998887777" },
+    update: { role: "ADMIN" },
+    create: {
+      phone: "9998887777",
+      zipcode: "00000",
+      name: "Admin User",
+      email: "admin@nagga.net",
+      role: "ADMIN",
+    },
+  });
+
   // Sample events
   const now = new Date();
   const events = [
@@ -44,10 +57,11 @@ async function main() {
   ];
 
   for (const e of events) {
-    await prisma.event.create({ data: e }).catch(() => {});
+    await prisma.event.create({ data: e }).catch(() => { });
   }
 
   console.log("Seed complete. Demo login: 5551234567 / 07030");
+  console.log("Admin login: 9998887777 / 00000");
 }
 
 main()

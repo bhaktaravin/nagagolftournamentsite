@@ -8,17 +8,58 @@ datasource db {
 }
 
 model Member {
-  id              String   @id @default(cuid())
-  phone           String   @unique
-  zipcode         String
-  name            String?
-  email           String?
-  membershipYear  Int      @default(2025)
-  handicap        Float?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  phone              String    @unique  // mobile phone, used for login
+  zipcode            String
+  name               String?
+  email              String?
+  role               Role      @default(USER)
+  membershipYear     Int       @default(2025)
+  handicap           Float?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Additional profile fields (matching legacy NAGGA profile)
+  homePhone          String?
+  mpId              String?    // member profile id / legacy id
+  status            String?   @default("Joined")
+  initiatedDate     DateTime?
+  slacksWaist       Int?
+  birthDate         DateTime?
+  address           String?
+  ghin              String?   // Golf Handicap and Information Network
+  memberType        String?
+  groupOfInitiation String?
+  slacksLength      Int?
+  sex               String?
+  club              String?   @default("NAGGA")
+  level             String?   // A, B, C, etc.
+  shirtSize         String?
+  shoeSize          String?
 
   eventRegistrations EventRegistration[]
+  handicapHistory    HandicapHistory[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  WAITLISTED
+  CANCELLED
+  MOVED_TO_MAIN
+}
+
+model HandicapHistory {
+  id        String   @id @default(cuid())
+  memberId  String
+  handicap  Float
+  recordedAt DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 }
 
 model Event {
@@ -40,6 +81,7 @@ model EventRegistration {
   eventId   String
   memberId  String
   notes     String?
+  status    RegistrationStatus @default(REGISTERED)
   createdAt DateTime @default(now())
 
   event  Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)

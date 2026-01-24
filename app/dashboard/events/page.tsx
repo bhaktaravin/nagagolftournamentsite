@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { formatDateTime } from "@/lib/formatDate";
 
 export default async function EventsPage() {
   await getMember();
@@ -10,16 +11,6 @@ export default async function EventsPage() {
     orderBy: { date: "asc" },
     include: { _count: { select: { registrations: true } } },
   });
-
-  const formatDate = (d: Date) =>
-    new Date(d).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
 
   return (
     <div>
@@ -36,7 +27,7 @@ export default async function EventsPage() {
                 {e.title}
               </Link>
             </h2>
-            <p className="mt-1 text-sm text-gray-500">{formatDate(e.date)}</p>
+            <p className="mt-1 text-sm text-gray-500">{formatDateTime(e.date)}</p>
             <p className="mt-2 text-sm text-gray-600">{e.location}</p>
             {e.description && (
               <p className="mt-2 line-clamp-2 text-sm text-gray-500">

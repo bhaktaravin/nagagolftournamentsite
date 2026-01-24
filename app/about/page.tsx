@@ -1,23 +1,10 @@
 import Link from "next/link";
+import { SiteHeader } from "@/components/SiteHeader";
 
 export default function AboutPage() {
   return (
     <main className="min-h-screen">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-          <Link href="/" className="text-lg font-semibold text-fairway">
-            NAGGA
-          </Link>
-          <nav className="flex gap-4">
-            <Link href="/" className="text-gray-600 hover:text-fairway">
-              Home
-            </Link>
-            <Link href="/contact" className="text-gray-600 hover:text-fairway">
-              Contact
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       <section className="mx-auto max-w-2xl px-4 py-12">
         <h1 className="mb-4 text-2xl font-semibold text-fairway">

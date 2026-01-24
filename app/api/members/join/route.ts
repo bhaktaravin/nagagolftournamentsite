@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
         zipcode: zipcode.trim(),
         name: name || null,
         email: email && email.length ? email : null,
+        status: "Joined",
+        initiatedDate: new Date(),
+        club: "NAGGA",
       },
     });
 

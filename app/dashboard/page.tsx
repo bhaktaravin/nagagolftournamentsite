@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { formatDate } from "@/lib/formatDate";
 
 export default async function DashboardPage() {
   const member = await getMember();
@@ -19,14 +20,6 @@ export default async function DashboardPage() {
       take: 5,
     }),
   ]);
-
-  const formatDate = (d: Date) =>
-    new Date(d).toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
 
   return (
     <div>
@@ -106,7 +99,7 @@ export default async function DashboardPage() {
           <dd className="font-medium">{member.handicap ?? "—"}</dd>
         </dl>
         <Link href="/dashboard/profile" className="mt-4 inline-block text-sm font-medium text-fairway hover:underline">
-          Edit profile →
+          My Profile →
         </Link>
       </div>
     </div>
