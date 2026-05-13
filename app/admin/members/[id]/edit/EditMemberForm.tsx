@@ -9,18 +9,14 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Select } from "@/components/ui/Select";
+import type { Member } from "@prisma/client";
 
-type MemberData = {
-    id: string;
-    name: string | null;
-    phone: string;
-    email: string | null;
-    zipcode: string;
-    role: string;
-    handicap: number | null;
-};
+type MemberFormModel = Pick<
+    Member,
+    "id" | "name" | "phone" | "email" | "zipcode" | "role" | "handicap"
+>;
 
-export function EditMemberForm({ member }: { member: MemberData }) {
+export function EditMemberForm({ member }: { member: MemberFormModel }) {
     const router = useRouter();
     const { addToast } = useToast();
     const [loading, setLoading] = useState(false);

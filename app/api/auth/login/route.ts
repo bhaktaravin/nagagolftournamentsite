@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { createSession, setSessionCookie } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { getClientIpFromRequest } from "@/lib/requestIp";
 
 const body = z.object({
   phone: z.string().min(10).max(15),
@@ -10,6 +12,15 @@ const body = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIpFromRequest(req);
+    const ipLimit = await checkRateLimit("login-ip", ip);
+    if (!ipLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many login attempts. Try again later." },
+        { status: 429, headers: { "Retry-After": String(ipLimit.retryAfterSec) } }
+      );
+    }
+
     const raw = await req.json();
     const { phone, zipcode } = body.parse(raw);
 
@@ -21,6 +32,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Please enter a valid phone number." },
         { status: 400 }
+      );
+    }
+
+    const phoneLimit = await checkRateLimit("login-phone", normalizedPhone);
+    if (!phoneLimit.ok) {
+      return NextResponse.json(
+        { error: "Too many login attempts for this number. Try again later." },
+        { status: 429, headers: { "Retry-After": String(phoneLimit.retryAfterSec) } }
       );
     }
 

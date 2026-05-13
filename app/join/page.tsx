@@ -10,7 +10,7 @@ export default function JoinPage() {
             NAGGA
           </Link>
           <Link href="/" className="text-gray-600 hover:text-fairway">
-            Back to Login
+            Back to Home
           </Link>
         </div>
       </header>
@@ -25,7 +25,7 @@ export default function JoinPage() {
         </div>
         <p className="mt-6 text-center text-sm text-gray-500">
           Already a member?{" "}
-          <Link href="/" className="font-medium text-fairway hover:underline">
+          <Link href="/login" className="font-medium text-fairway hover:underline">
             Log in
           </Link>
         </p>

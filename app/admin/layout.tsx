@@ -2,6 +2,7 @@ import { getMember } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import React from "react";
+import { Role } from "@prisma/client";
 
 export default async function AdminLayout({
     children,
@@ -10,8 +11,7 @@ export default async function AdminLayout({
 }) {
     const member = await getMember();
 
-    // @ts-ignore - Role will be available after schema push
-    if (!member || member.role !== "ADMIN") {
+    if (!member || member.role !== Role.ADMIN) {
         redirect("/dashboard");
     }
 
@@ -39,6 +39,12 @@ export default async function AdminLayout({
                         className="group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-white/10"
                     >
                         Members
+                    </Link>
+                    <Link
+                        href="/admin/audit"
+                        className="group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-white/10"
+                    >
+                        Audit log
                     </Link>
                 </nav>
                 <div className="absolute bottom-4 left-0 w-full px-3">

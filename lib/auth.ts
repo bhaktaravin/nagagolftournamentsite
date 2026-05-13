@@ -2,9 +2,14 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { prisma } from "./db";
 
-const SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "nagga-dev-secret-change-in-production"
-);
+function getSecretKey() {
+  if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET?.length) {
+    throw new Error("JWT_SECRET must be set in production");
+  }
+  return new TextEncoder().encode(
+    process.env.JWT_SECRET || "nagga-dev-secret-change-in-production"
+  );
+}
 
 export type SessionPayload = { memberId: string; phone: string; exp: number };
 
@@ -12,13 +17,13 @@ export async function createSession(memberId: string, phone: string): Promise<st
   const token = await new SignJWT({ memberId, phone })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("7d")
-    .sign(SECRET);
+    .sign(getSecretKey());
   return token;
 }
 
 export async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, getSecretKey());
     return payload as unknown as SessionPayload;
   } catch {
     return null;

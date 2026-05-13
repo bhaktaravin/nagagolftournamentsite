@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getMember } from "@/lib/auth";
 import { SiteHeader } from "@/components/SiteHeader";
 

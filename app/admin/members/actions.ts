@@ -2,55 +2,68 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { Role } from "@prisma/client";
+import { getClientIpFromHeaders } from "@/lib/requestIp";
+import { requireAdmin } from "@/lib/requireAdmin";
 
 export async function updateMember(memberId: string, formData: FormData) {
-    const name = formData.get("name") as string;
-    const phone = formData.get("phone") as string;
-    const email = formData.get("email") as string;
-    const zipcode = formData.get("zipcode") as string;
-    const role = formData.get("role") as string;
-    const handicapStr = formData.get("handicap") as string;
+  const admin = await requireAdmin();
+  const ip = await getClientIpFromHeaders();
 
-    const handicap = handicapStr ? parseFloat(handicapStr) : null;
+  const name = formData.get("name") as string;
+  const phone = formData.get("phone") as string;
+  const email = formData.get("email") as string;
+  const zipcode = formData.get("zipcode") as string;
+  const role = formData.get("role") as string;
+  const handicapStr = formData.get("handicap") as string;
 
-    // 1. Get current member to check for handicap change
-    const currentMember = await prisma.member.findUnique({
-        where: { id: memberId },
-    });
+  const handicap = handicapStr ? Number.parseFloat(handicapStr) : null;
 
-    if (!currentMember) {
-        throw new Error("Member not found");
-    }
+  const currentMember = await prisma.member.findUnique({
+    where: { id: memberId },
+  });
 
-    // 2. If handicap changed, record history
+  if (!currentMember) {
+    throw new Error("Member not found");
+  }
+
+  await prisma.$transaction(async (tx) => {
     if (currentMember.handicap !== handicap && handicap !== null) {
-        await prisma.handicapHistory.create({
-            data: {
-                memberId,
-                handicap,
-                // recordedAt is default now()
-            },
-        });
+      await tx.handicapHistory.create({
+        data: {
+          memberId,
+          handicap,
+        },
+      });
     }
 
-    // 3. Update member
-    // @ts-ignore - Role enum compatibility
-    await prisma.member.update({
-        where: { id: memberId },
-        data: {
-            name,
-            phone,
-            email,
-            zipcode,
-            role: role as any,
-            handicap,
-        },
+    await tx.member.update({
+      where: { id: memberId },
+      data: {
+        name,
+        phone,
+        email,
+        zipcode,
+        role: role as Role,
+        handicap,
+      },
     });
 
-    revalidatePath("/admin/members");
-    revalidatePath(`/admin/members/${memberId}/edit`);
-    revalidatePath("/dashboard/leaderboard");
+    await tx.adminAuditLog.create({
+      data: {
+        actorId: admin.id,
+        action: "MEMBER_UPDATE",
+        resourceType: "Member",
+        resourceId: memberId,
+        details: { role },
+        ip,
+      },
+    });
+  });
 
-    return { success: true };
+  revalidatePath("/admin/members");
+  revalidatePath(`/admin/members/${memberId}/edit`);
+  revalidatePath("/dashboard/leaderboard");
+
+  return { success: true };
 }

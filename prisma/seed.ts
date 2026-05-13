@@ -1,10 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Role } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main() {
   // Demo member: phone 5551234567, zip 07030
-  const member = await prisma.member.upsert({
+  await prisma.member.upsert({
     where: { phone: "5551234567" },
     update: {},
     create: {
@@ -18,15 +18,15 @@ async function main() {
   });
 
   // Admin member: phone 9998887777, zip 00000
-  const admin = await prisma.member.upsert({
+  await prisma.member.upsert({
     where: { phone: "9998887777" },
-    update: { role: "ADMIN" },
+    update: { role: Role.ADMIN },
     create: {
       phone: "9998887777",
       zipcode: "00000",
       name: "Admin User",
       email: "admin@nagga.net",
-      role: "ADMIN",
+      role: Role.ADMIN,
     },
   });
 

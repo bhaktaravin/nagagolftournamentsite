@@ -39,6 +39,23 @@ model Member {
 
   eventRegistrations EventRegistration[]
   handicapHistory    HandicapHistory[]
+  adminAuditLogs     AdminAuditLog[]
+}
+
+model AdminAuditLog {
+  id           String   @id @default(cuid())
+  actorId      String
+  action       String
+  resourceType String
+  resourceId   String?
+  details      Json?
+  ip           String?
+  createdAt    DateTime @default(now())
+
+  actor Member @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([createdAt])
+  @@index([actorId])
 }
 
 enum Role {

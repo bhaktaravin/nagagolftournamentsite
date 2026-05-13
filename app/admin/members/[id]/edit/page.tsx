@@ -25,7 +25,6 @@ export default async function EditMemberPage({
                     Cancel
                 </Link>
             </div>
-            {/* @ts-ignore */}
             <EditMemberForm member={member} />
         </div>
     );

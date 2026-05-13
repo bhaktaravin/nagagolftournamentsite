@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { RegistrationStatus } from "@prisma/client";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
@@ -32,9 +33,9 @@ export async function POST(
   }
 
   // 2. Determine status based on capacity
-  let status = "REGISTERED";
+  let status: RegistrationStatus = RegistrationStatus.REGISTERED;
   if (event.maxParticipants != null && event._count.registrations >= event.maxParticipants) {
-    status = "WAITLISTED";
+    status = RegistrationStatus.WAITLISTED;
   }
 
   const existing = await prisma.eventRegistration.findUnique({
@@ -50,12 +51,11 @@ export async function POST(
     );
   }
 
-  // @ts-ignore - Enum in prisma client needs update
   await prisma.eventRegistration.create({
     data: {
       eventId,
       memberId: session.memberId,
-      status: status as any
+      status,
     },
   });
 

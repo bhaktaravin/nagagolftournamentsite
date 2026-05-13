@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Role } from "@prisma/client";
 import { getMember } from "@/lib/auth";
 
 export async function SiteHeader() {
@@ -13,8 +14,7 @@ export async function SiteHeader() {
                 <nav className="flex items-center gap-4">
                     {member ? (
                         <>
-                            {/* @ts-ignore */}
-                            {member.role === "ADMIN" && (
+                            {member.role === Role.ADMIN && (
                                 <Link
                                     href="/admin"
                                     className="text-[#1a472a] font-medium hover:text-[#2d5a3d]"
@@ -57,7 +57,7 @@ export async function SiteHeader() {
                             <Link href="/contact" className="text-gray-600 hover:text-fairway">
                                 Contact
                             </Link>
-                            <Link href="/" className="btn-primary text-sm">
+                            <Link href="/login" className="btn-primary text-sm">
                                 Login
                             </Link>
                         </>

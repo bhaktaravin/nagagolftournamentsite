@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import { Role } from "@prisma/client";
 
 export default async function AdminMembersPage() {
-    // @ts-ignore - 'role' is not in client types yet
     const members = await prisma.member.findMany({
         orderBy: { name: "asc" },
     });
@@ -46,16 +46,12 @@ export default async function AdminMembersPage() {
                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                                     <span
                                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                                            // @ts-ignore
-                                            member.role === "ADMIN"
+                                            member.role === Role.ADMIN
                                                 ? "bg-purple-100 text-purple-800"
                                                 : "bg-green-100 text-green-800"
                                             }`}
                                     >
-                                        {
-                                            // @ts-ignore
-                                            member.role
-                                        }
+                                        {member.role}
                                     </span>
                                 </td>
                                 <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
