@@ -30,9 +30,18 @@ export function JoinForm() {
           email: email.trim() || undefined,
         }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: { error?: string; ok?: boolean } = {};
+      try {
+        data = text ? (JSON.parse(text) as typeof data) : {};
+      } catch {
+        setError(
+          `Unexpected response (${res.status}). The server may be misconfigured — check deployment logs.`
+        );
+        return;
+      }
       if (!res.ok) {
-        setError(data.error || "Registration failed.");
+        setError(data.error || `Registration failed (${res.status}).`);
         return;
       }
       router.refresh();

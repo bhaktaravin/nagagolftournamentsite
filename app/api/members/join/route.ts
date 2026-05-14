@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rateLimit";
@@ -67,6 +68,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Phone and zipcode are required." },
         { status: 400 }
+      );
+    }
+    if (e instanceof Prisma.PrismaClientKnownRequestError) {
+      if (e.code === "P2002") {
+        return NextResponse.json(
+          {
+            error:
+              "This phone number is already registered. Please log in instead.",
+          },
+          { status: 409 }
+        );
+      }
+    }
+    if (e instanceof Prisma.PrismaClientInitializationError) {
+      console.error("[join] database connection failed:", e.message);
+      return NextResponse.json(
+        {
+          error:
+            "The site could not reach the database. If you are the admin, confirm DATABASE_URL on the server and that the schema is deployed (e.g. prisma db push).",
+        },
+        { status: 503 }
       );
     }
     console.error(e);
