@@ -1,10 +1,25 @@
 import { getMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
+
+type LeaderboardMember = Prisma.MemberGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    handicap: true;
+    membershipYear: true;
+    handicapHistory: {
+      take: 1;
+      orderBy: { recordedAt: "desc" };
+      select: { handicap: true };
+    };
+  };
+}>;
 
 export default async function LeaderboardPage() {
   await getMember();
 
-  const members = await prisma.member.findMany({
+  const members = (await prisma.member.findMany({
     where: { handicap: { not: null } },
     orderBy: { handicap: "asc" },
     select: {
@@ -18,7 +33,7 @@ export default async function LeaderboardPage() {
         select: { handicap: true },
       },
     },
-  });
+  })) as LeaderboardMember[];
 
   return (
     <div>

@@ -1,7 +1,12 @@
 import Link from "next/link";
+import type { Event, Prisma } from "@prisma/client";
 import { getMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/formatDate";
+
+type RegistrationWithEvent = Prisma.EventRegistrationGetPayload<{
+  include: { event: true };
+}>;
 
 export default async function DashboardPage() {
   const member = await getMember();
@@ -12,13 +17,13 @@ export default async function DashboardPage() {
       where: { date: { gte: new Date() }, isPublished: true },
       orderBy: { date: "asc" },
       take: 5,
-    }),
+    }) as Promise<Event[]>,
     prisma.eventRegistration.findMany({
       where: { memberId: member.id },
       include: { event: true },
       orderBy: { createdAt: "desc" },
       take: 5,
-    }),
+    }) as Promise<RegistrationWithEvent[]>,
   ]);
 
   return (

@@ -24,36 +24,30 @@ export async function POST(
 
   const wasMain = reg.status === RegistrationStatus.REGISTERED;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.eventRegistration.delete({
-      where: { id: reg.id },
-    });
+  await prisma.eventRegistration.delete({
+    where: { id: reg.id },
+  });
 
-    if (!wasMain) {
-      return;
-    }
-
-    const event = await tx.event.findUnique({
+  if (wasMain) {
+    const event = await prisma.event.findUnique({
       where: { id: eventId },
       select: { maxParticipants: true },
     });
 
-    if (event?.maxParticipants == null) {
-      return;
-    }
-
-    const nextWait = await tx.eventRegistration.findFirst({
-      where: { eventId, status: RegistrationStatus.WAITLISTED },
-      orderBy: { createdAt: "asc" },
-    });
-
-    if (nextWait) {
-      await tx.eventRegistration.update({
-        where: { id: nextWait.id },
-        data: { status: RegistrationStatus.REGISTERED },
+    if (event?.maxParticipants != null) {
+      const nextWait = await prisma.eventRegistration.findFirst({
+        where: { eventId, status: RegistrationStatus.WAITLISTED },
+        orderBy: { createdAt: "asc" },
       });
+
+      if (nextWait) {
+        await prisma.eventRegistration.update({
+          where: { id: nextWait.id },
+          data: { status: RegistrationStatus.REGISTERED },
+        });
+      }
     }
-  });
+  }
 
   return NextResponse.json({ ok: true });
 }

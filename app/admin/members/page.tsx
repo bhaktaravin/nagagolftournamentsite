@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import type { Member } from "@prisma/client";
 import { Role } from "@prisma/client";
 
 export default async function AdminMembersPage() {
-    const members = await prisma.member.findMany({
+    const members = (await prisma.member.findMany({
         orderBy: { name: "asc" },
-    });
+    })) as Member[];
 
     return (
         <div>

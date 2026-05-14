@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const members = await prisma.member.findMany({
+  const members = (await prisma.member.findMany({
     orderBy: { name: "asc" },
     select: {
       id: true,
@@ -17,7 +17,13 @@ export async function GET() {
       handicap: true,
       zipcode: true,
     },
-  });
+  })) as {
+    id: string;
+    name: string | null;
+    membershipYear: number;
+    handicap: number | null;
+    zipcode: string;
+  }[];
 
   return NextResponse.json({
     members: members.map((m) => ({

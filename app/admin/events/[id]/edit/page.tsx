@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { EventScore, EventPairing, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { toDateInputValue, toTimeInputValue } from "@/lib/datetimeForm";
 import {
@@ -15,6 +16,17 @@ import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Textarea } from "@/components/ui/Textarea";
 
+type EventEditData = Prisma.EventGetPayload<{
+  include: {
+    pairings: true;
+    registrations: {
+      include: { member: { select: { name: true; phone: true } } };
+    };
+  };
+}>;
+
+type RegistrationRow = EventEditData["registrations"][number];
+
 export default async function AdminEditEventPage({
   params,
 }: {
@@ -22,7 +34,7 @@ export default async function AdminEditEventPage({
 }) {
   const { id } = await params;
 
-  const event = await prisma.event.findUnique({
+  const raw = await prisma.event.findUnique({
     where: { id },
     include: {
       pairings: { orderBy: { sortOrder: "asc" } },
@@ -33,14 +45,16 @@ export default async function AdminEditEventPage({
     },
   });
 
-  if (!event) notFound();
+  if (!raw) notFound();
 
-  const scoresByMember = new Map(
+  const event = raw as EventEditData;
+
+  const scoresByMember = new Map<string, EventScore>(
     (
       await prisma.eventScore.findMany({
         where: { eventId: id },
       })
-    ).map((s) => [s.memberId, s])
+    ).map((s: EventScore) => [s.memberId, s])
   );
 
   const regDeadlineDate = event.registrationDeadline
@@ -174,7 +188,7 @@ export default async function AdminEditEventPage({
             Add groups (e.g. “Shotgun — Hole 1” or “8:12 AM — Tee 10”). Assign players below.
           </p>
           <ul className="space-y-2">
-            {event.pairings.map((p) => (
+            {event.pairings.map((p: EventPairing) => (
               <li
                 key={p.id}
                 className="flex items-center justify-between rounded border border-gray-100 bg-gray-50 px-3 py-2 text-sm"
@@ -215,7 +229,7 @@ export default async function AdminEditEventPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {event.registrations.map((r) => (
+                  {event.registrations.map((r: RegistrationRow) => (
                     <tr key={r.id} className="border-b border-gray-100">
                       <td className="py-2 pr-4">
                         <div className="font-medium text-gray-900">{r.member.name || "Member"}</div>
@@ -236,7 +250,7 @@ export default async function AdminEditEventPage({
                           defaultValue={r.pairingId ?? ""}
                         >
                           <option value="">— None —</option>
-                          {event.pairings.map((p) => (
+                          {event.pairings.map((p: EventPairing) => (
                             <option key={p.id} value={p.id}>
                               {p.label}
                             </option>
@@ -274,7 +288,7 @@ export default async function AdminEditEventPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {event.registrations.map((r) => {
+                  {event.registrations.map((r: RegistrationRow) => {
                     const sc = scoresByMember.get(r.memberId);
                     return (
                       <tr key={r.id} className="border-b border-gray-100">

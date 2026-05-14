@@ -27,38 +27,36 @@ export async function updateMember(memberId: string, formData: FormData) {
     throw new Error("Member not found");
   }
 
-  await prisma.$transaction(async (tx) => {
-    if (currentMember.handicap !== handicap && handicap !== null) {
-      await tx.handicapHistory.create({
-        data: {
-          memberId,
-          handicap,
-        },
-      });
-    }
-
-    await tx.member.update({
-      where: { id: memberId },
+  if (currentMember.handicap !== handicap && handicap !== null) {
+    await prisma.handicapHistory.create({
       data: {
-        name,
-        phone,
-        email,
-        zipcode,
-        role: role as Role,
+        memberId,
         handicap,
       },
     });
+  }
 
-    await tx.adminAuditLog.create({
-      data: {
-        actorId: admin.id,
-        action: "MEMBER_UPDATE",
-        resourceType: "Member",
-        resourceId: memberId,
-        details: { role },
-        ip,
-      },
-    });
+  await prisma.member.update({
+    where: { id: memberId },
+    data: {
+      name,
+      phone,
+      email,
+      zipcode,
+      role: role as Role,
+      handicap,
+    },
+  });
+
+  await prisma.adminAuditLog.create({
+    data: {
+      actorId: admin.id,
+      action: "MEMBER_UPDATE",
+      resourceType: "Member",
+      resourceId: memberId,
+      details: { role },
+      ip,
+    },
   });
 
   revalidatePath("/admin/members");

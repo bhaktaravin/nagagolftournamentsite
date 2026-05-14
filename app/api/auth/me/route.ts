@@ -15,7 +15,8 @@ export async function GET() {
       zipcode: member.zipcode,
       membershipYear: member.membershipYear,
       handicap: member.handicap,
-      eventRegistrations: member.eventRegistrations.map((r) => ({
+      eventRegistrations: member.eventRegistrations.map(
+        (r: { event: { id: string; title: string; date: Date } }) => ({
         eventId: r.event.id,
         eventTitle: r.event.title,
         eventDate: r.event.date,

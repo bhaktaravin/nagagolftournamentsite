@@ -1,13 +1,23 @@
 import Link from "next/link";
-import { RegistrationStatus } from "@prisma/client";
+import { RegistrationStatus, type Prisma } from "@prisma/client";
 import { getMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/formatDate";
 
+type DashboardEventCard = Prisma.EventGetPayload<{
+  include: {
+    _count: {
+      select: {
+        registrations: { where: { status: "REGISTERED" } };
+      };
+    };
+  };
+}>;
+
 export default async function EventsPage() {
   await getMember();
 
-  const events = await prisma.event.findMany({
+  const events = (await prisma.event.findMany({
     where: { isPublished: true },
     orderBy: { date: "asc" },
     include: {
@@ -19,7 +29,7 @@ export default async function EventsPage() {
         },
       },
     },
-  });
+  })) as DashboardEventCard[];
 
   return (
     <div>

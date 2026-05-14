@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rateLimit";
@@ -63,15 +62,17 @@ export async function POST(req: NextRequest) {
       ok: true,
       member: { id: member.id, phone: member.phone },
     });
-  } catch (e) {
+  } catch (e: unknown) {
     if (e instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Phone and zipcode are required." },
         { status: 400 }
       );
     }
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      if (e.code === "P2002") {
+
+    const prismaErr = e as { code?: string };
+    if (typeof prismaErr.code === "string") {
+      if (prismaErr.code === "P2002") {
         return NextResponse.json(
           {
             error:
@@ -80,9 +81,20 @@ export async function POST(req: NextRequest) {
           { status: 409 }
         );
       }
+      if (prismaErr.code === "P2021" || prismaErr.code === "P2022") {
+        return NextResponse.json(
+          {
+            error:
+              "The database is missing tables or columns. Run `npx prisma db push` against the database URL used in production (Vercel → DATABASE_URL), then redeploy.",
+          },
+          { status: 503 }
+        );
+      }
     }
-    if (e instanceof Prisma.PrismaClientInitializationError) {
-      console.error("[join] database connection failed:", e.message);
+
+    const err = e as Error;
+    if (err?.name === "PrismaClientInitializationError") {
+      console.error("[join] database connection failed:", err.message);
       return NextResponse.json(
         {
           error:
@@ -91,6 +103,7 @@ export async function POST(req: NextRequest) {
         { status: 503 }
       );
     }
+
     console.error(e);
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },

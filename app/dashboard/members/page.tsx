@@ -1,10 +1,21 @@
 import { getMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import type { Prisma } from "@prisma/client";
+
+type DirectoryMember = Prisma.MemberGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    membershipYear: true;
+    handicap: true;
+    zipcode: true;
+  };
+}>;
 
 export default async function MembersPage() {
   await getMember(); // layout already ensures auth
 
-  const members = await prisma.member.findMany({
+  const members = (await prisma.member.findMany({
     orderBy: { name: "asc" },
     select: {
       id: true,
@@ -13,7 +24,7 @@ export default async function MembersPage() {
       handicap: true,
       zipcode: true,
     },
-  });
+  })) as DirectoryMember[];
 
   return (
     <div>

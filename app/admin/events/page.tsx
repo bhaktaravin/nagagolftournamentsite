@@ -1,12 +1,17 @@
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import type { Prisma } from "@prisma/client";
 import { deleteEvent } from "./actions";
 
+type AdminEventRow = Prisma.EventGetPayload<{
+    include: { _count: { select: { registrations: true } } };
+}>;
+
 export default async function AdminEventsPage() {
-    const events = await prisma.event.findMany({
+    const events = (await prisma.event.findMany({
         orderBy: { date: "desc" },
         include: { _count: { select: { registrations: true } } },
-    });
+    })) as AdminEventRow[];
 
     return (
         <div>

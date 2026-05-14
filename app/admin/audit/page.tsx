@@ -1,8 +1,13 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/formatDate";
 
+type AuditRow = Prisma.AdminAuditLogGetPayload<{
+  include: { actor: { select: { name: true; phone: true } } };
+}>;
+
 export default async function AdminAuditPage() {
-  const rows = await prisma.adminAuditLog.findMany({
+  const rows: AuditRow[] = await prisma.adminAuditLog.findMany({
     orderBy: { createdAt: "desc" },
     take: 150,
     include: {

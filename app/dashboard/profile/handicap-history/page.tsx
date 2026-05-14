@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { HandicapHistory } from "@prisma/client";
 import { getMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/formatDate";
@@ -7,10 +8,10 @@ export default async function HandicapHistoryPage() {
   const member = await getMember();
   if (!member) return null;
 
-  const history = await prisma.handicapHistory.findMany({
+  const history = (await prisma.handicapHistory.findMany({
     where: { memberId: member.id },
     orderBy: { recordedAt: "desc" },
-  });
+  })) as HandicapHistory[];
 
   return (
     <div>

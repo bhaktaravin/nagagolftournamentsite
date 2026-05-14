@@ -65,30 +65,28 @@ export async function createEvent(formData: FormData) {
 
   const date = new Date(`${dateStr}T${timeStr}`);
 
-  await prisma.$transaction(async (tx) => {
-    const event = await tx.event.create({
-      data: {
-        title,
-        description,
-        date,
-        location,
-        maxParticipants,
-        format,
-        tournamentNotes,
-        registrationDeadline,
-      },
-    });
+  const event = await prisma.event.create({
+    data: {
+      title,
+      description,
+      date,
+      location,
+      maxParticipants,
+      format,
+      tournamentNotes,
+      registrationDeadline,
+    },
+  });
 
-    await tx.adminAuditLog.create({
-      data: {
-        actorId: admin.id,
-        action: "EVENT_CREATE",
-        resourceType: "Event",
-        resourceId: event.id,
-        details: { title: event.title },
-        ip,
-      },
-    });
+  await prisma.adminAuditLog.create({
+    data: {
+      actorId: admin.id,
+      action: "EVENT_CREATE",
+      resourceType: "Event",
+      resourceId: event.id,
+      details: { title: event.title },
+      ip,
+    },
   });
 
   revalidatePath("/admin/events");
@@ -115,32 +113,30 @@ export async function updateEvent(eventId: string, formData: FormData) {
 
   const date = new Date(`${dateStr}T${timeStr}`);
 
-  await prisma.$transaction(async (tx) => {
-    await tx.event.update({
-      where: { id: eventId },
-      data: {
-        title,
-        description,
-        date,
-        location,
-        maxParticipants,
-        format,
-        tournamentNotes,
-        registrationDeadline,
-        isPublished,
-      },
-    });
+  await prisma.event.update({
+    where: { id: eventId },
+    data: {
+      title,
+      description,
+      date,
+      location,
+      maxParticipants,
+      format,
+      tournamentNotes,
+      registrationDeadline,
+      isPublished,
+    },
+  });
 
-    await tx.adminAuditLog.create({
-      data: {
-        actorId: admin.id,
-        action: "EVENT_UPDATE",
-        resourceType: "Event",
-        resourceId: eventId,
-        details: { title },
-        ip,
-      },
-    });
+  await prisma.adminAuditLog.create({
+    data: {
+      actorId: admin.id,
+      action: "EVENT_UPDATE",
+      resourceType: "Event",
+      resourceId: eventId,
+      details: { title },
+      ip,
+    },
   });
 
   revalidatePath("/admin/events");
@@ -190,10 +186,10 @@ export async function deletePairing(pairingId: string, formData?: FormData) {
 export async function saveRegistrationAssignments(eventId: string, formData: FormData) {
   await requireAdmin();
 
-  const regs = await prisma.eventRegistration.findMany({
+  const regs = (await prisma.eventRegistration.findMany({
     where: { eventId },
     select: { id: true },
-  });
+  })) as { id: string }[];
 
   if (regs.length > 0) {
     await prisma.$transaction(
@@ -216,10 +212,11 @@ export async function saveRegistrationAssignments(eventId: string, formData: For
 export async function saveEventScores(eventId: string, formData: FormData) {
   await requireAdmin();
 
-  const regs = await prisma.eventRegistration.findMany({
+  const regs = (await prisma.eventRegistration.findMany({
     where: { eventId },
     select: { memberId: true },
-  });
+  })) as { memberId: string }[];
+
   const memberIds = [...new Set(regs.map((r) => r.memberId))];
 
   for (const memberId of memberIds) {
