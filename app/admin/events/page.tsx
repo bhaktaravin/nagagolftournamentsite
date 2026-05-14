@@ -66,13 +66,16 @@ export default async function AdminEventsPage() {
                                     {event.maxParticipants ? ` / ${event.maxParticipants}` : ""}
                                 </td>
                                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                    <form action={deleteEvent.bind(null, event.id)}>
+                                    <Link
+                                        href={`/admin/events/${event.id}/edit`}
+                                        className="mr-4 text-[#1a472a] hover:text-[#2d5a3d]"
+                                    >
+                                        Edit
+                                    </Link>
+                                    <form className="inline" action={deleteEvent.bind(null, event.id)}>
                                         <button
                                             type="submit"
                                             className="text-red-600 hover:text-red-900"
-                                            onClick={() => {
-                                                /* Confirm? Browser standard confirm doesn't work well in form action directly this way without js hook using onSubmit, but let's keep simple */
-                                            }}
                                         >
                                             Delete
                                         </button>

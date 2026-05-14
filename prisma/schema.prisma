@@ -40,6 +40,7 @@ model Member {
   eventRegistrations EventRegistration[]
   handicapHistory    HandicapHistory[]
   adminAuditLogs     AdminAuditLog[]
+  eventScores        EventScore[]
 }
 
 model AdminAuditLog {
@@ -80,17 +81,56 @@ model HandicapHistory {
 }
 
 model Event {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  date            DateTime
-  location        String
-  maxParticipants Int?
-  isPublished     Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                    String    @id @default(cuid())
+  title                 String
+  description           String?
+  date                  DateTime
+  location              String
+  maxParticipants       Int?
+  isPublished           Boolean   @default(true)
+  /// e.g. Stroke play, Scramble, Stableford
+  format                String?
+  /// When online registration closes (optional)
+  registrationDeadline  DateTime?
+  /// Rules, prizes, format details for players
+  tournamentNotes       String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   registrations EventRegistration[]
+  pairings       EventPairing[]
+  scores          EventScore[]
+}
+
+model EventPairing {
+  id        String   @id @default(cuid())
+  eventId   String
+  label     String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  event           Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrations   EventRegistration[]
+
+  @@index([eventId])
+}
+
+model EventScore {
+  id        String   @id @default(cuid())
+  eventId   String
+  memberId  String
+  gross     Int?
+  net       Float?
+  place     Int?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event  Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, memberId])
+  @@index([eventId])
 }
 
 model EventRegistration {
@@ -99,10 +139,15 @@ model EventRegistration {
   memberId  String
   notes     String?
   status    RegistrationStatus @default(REGISTERED)
+  /// Handicap flight label (A, B, C, etc.) — set by admin
+  flight      String?
+  pairingId   String?
   createdAt DateTime @default(now())
 
-  event  Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  event   Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  member  Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  pairing EventPairing?  @relation(fields: [pairingId], references: [id], onDelete: SetNull)
 
   @@unique([eventId, memberId])
+  @@index([pairingId])
 }

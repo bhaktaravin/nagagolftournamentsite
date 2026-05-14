@@ -90,6 +90,36 @@ export function CreateEventForm() {
                         />
                     </div>
 
+                    <div className="space-y-2">
+                        <Label htmlFor="format">Format (optional)</Label>
+                        <Input
+                            id="format"
+                            name="format"
+                            placeholder="e.g. Stroke play, Scramble, Stableford"
+                        />
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="registrationDeadlineDate">Registration deadline — date (optional)</Label>
+                            <Input id="registrationDeadlineDate" name="registrationDeadlineDate" type="date" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="registrationDeadlineTime">Registration deadline — time (optional)</Label>
+                            <Input id="registrationDeadlineTime" name="registrationDeadlineTime" type="time" />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="tournamentNotes">Tournament notes (optional)</Label>
+                        <Textarea
+                            id="tournamentNotes"
+                            name="tournamentNotes"
+                            placeholder="Rules, prizes, tee policy…"
+                            rows={3}
+                        />
+                    </div>
+
                     <div className="pt-4">
                         <Button type="submit" className="w-full" disabled={loading}>
                             {loading ? "Creating..." : "Create Event"}

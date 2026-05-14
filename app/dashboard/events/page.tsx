@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RegistrationStatus } from "@prisma/client";
 import { getMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatDateTime } from "@/lib/formatDate";
@@ -9,7 +10,15 @@ export default async function EventsPage() {
   const events = await prisma.event.findMany({
     where: { isPublished: true },
     orderBy: { date: "asc" },
-    include: { _count: { select: { registrations: true } } },
+    include: {
+      _count: {
+        select: {
+          registrations: {
+            where: { status: RegistrationStatus.REGISTERED },
+          },
+        },
+      },
+    },
   });
 
   return (
@@ -22,11 +31,18 @@ export default async function EventsPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {events.map((e) => (
           <div key={e.id} className="card flex flex-col">
-            <h2 className="text-lg font-semibold text-fairway">
-              <Link href={`/dashboard/events/${e.id}`} className="hover:underline">
-                {e.title}
-              </Link>
-            </h2>
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h2 className="text-lg font-semibold text-fairway">
+                <Link href={`/dashboard/events/${e.id}`} className="hover:underline">
+                  {e.title}
+                </Link>
+              </h2>
+              {e.format ? (
+                <span className="shrink-0 rounded-full bg-fairway/10 px-2 py-0.5 text-xs font-medium text-fairway">
+                  {e.format}
+                </span>
+              ) : null}
+            </div>
             <p className="mt-1 text-sm text-gray-500">{formatDateTime(e.date)}</p>
             <p className="mt-2 text-sm text-gray-600">{e.location}</p>
             {e.description && (

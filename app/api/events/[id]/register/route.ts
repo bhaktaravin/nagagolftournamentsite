@@ -21,7 +21,7 @@ export async function POST(
       _count: {
         select: {
           registrations: {
-            where: { status: "REGISTERED" },
+            where: { status: RegistrationStatus.REGISTERED },
           },
         },
       },
@@ -30,6 +30,13 @@ export async function POST(
 
   if (!event) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  }
+
+  if (event.registrationDeadline && new Date() > event.registrationDeadline) {
+    return NextResponse.json(
+      { error: "Registration for this event is closed." },
+      { status: 400 }
+    );
   }
 
   // 2. Determine status based on capacity

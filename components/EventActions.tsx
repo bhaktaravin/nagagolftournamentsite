@@ -8,9 +8,16 @@ type Props = {
   isRegistered: boolean;
   isWaitlisted: boolean;
   isFull: boolean;
+  registrationClosed: boolean;
 };
 
-export function EventActions({ eventId, isRegistered, isWaitlisted, isFull }: Props) {
+export function EventActions({
+  eventId,
+  isRegistered,
+  isWaitlisted,
+  isFull,
+  registrationClosed,
+}: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -86,6 +93,14 @@ export function EventActions({ eventId, isRegistered, isWaitlisted, isFull }: Pr
       >
         {loading ? "Updating…" : "Cancel registration"}
       </button>
+    );
+  }
+
+  if (registrationClosed) {
+    return (
+      <p className="rounded-md bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700">
+        Registration is closed for this event.
+      </p>
     );
   }
 
